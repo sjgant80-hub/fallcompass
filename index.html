@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>fallcompass · sovereign LLM cascade · ◊·κ=1</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Sovereign LLM router. 8 providers. First success wins. If Anthropic gates, the cascade keeps your tool alive. MIT.">
+<style>
+:root{--ox:#8b1a1a;--ox-dim:#5a1010;--brass:#b8974a;--brass-dim:#7a6228;--cream:#c4bfb2;--cream-dim:#7d7a72;--void:#0b0a0f;--void-2:#14121a;--void-3:#1e1b25;--green:#4caf50;--red:#e53935}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--void);color:var(--cream);font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:14px;line-height:1.65;min-height:100vh}
+body{background-image:radial-gradient(at 0% 0%,rgba(139,26,26,.08),transparent 50%),radial-gradient(at 100% 100%,rgba(184,151,74,.05),transparent 50%)}
+a{color:var(--brass);text-decoration:none;border-bottom:1px dotted var(--brass-dim)}
+a:hover{color:var(--cream);border-bottom-color:var(--cream)}
+.wrap{max-width:920px;margin:0 auto;padding:60px 32px 120px}
+header{margin-bottom:64px;border-bottom:1px solid var(--ox-dim);padding-bottom:32px}
+header h1{font-size:42px;font-weight:400;letter-spacing:6px;color:var(--cream);margin-bottom:14px}
+header h1 .s{color:var(--ox);font-size:48px}
+header h1 .k{color:var(--brass)}
+header .sub{color:var(--cream-dim);letter-spacing:2px;font-size:13px;margin-bottom:18px}
+header .meta{display:flex;gap:18px;flex-wrap:wrap;font-size:11px;color:var(--cream-dim);letter-spacing:1px}
+header .meta span{padding:3px 10px;border:1px solid var(--brass-dim);color:var(--brass)}
+section{margin-bottom:56px}
+h2{font-size:11px;letter-spacing:4px;color:var(--brass);text-transform:uppercase;margin-bottom:18px;border-bottom:1px solid var(--brass-dim);padding-bottom:6px}
+h3{font-size:14px;letter-spacing:2px;color:var(--cream);margin:24px 0 10px;text-transform:uppercase}
+p{margin-bottom:14px;color:var(--cream)}
+.lead{font-size:18px;line-height:1.7;color:var(--cream);margin-bottom:20px}
+.hook{font-size:14px;color:var(--cream-dim);font-style:italic;margin-bottom:32px;padding-left:18px;border-left:2px solid var(--brass)}
+ul{list-style:none;margin-bottom:18px}
+ul li{padding:4px 0;color:var(--cream);position:relative;padding-left:20px}
+ul li:before{content:"◊";position:absolute;left:0;color:var(--ox)}
+table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:13px}
+table th,table td{text-align:left;padding:8px 12px;border:1px solid var(--void-3)}
+table th{background:var(--void-2);color:var(--brass);font-weight:400;letter-spacing:2px;font-size:11px;text-transform:uppercase}
+table td.good{color:var(--green)}
+table td.dim{color:var(--cream-dim)}
+code,pre{font-family:inherit;background:var(--void-2);color:var(--brass);padding:2px 8px;border:1px solid var(--void-3)}
+pre{padding:14px 18px;margin:14px 0;overflow-x:auto;font-size:12px;line-height:1.7;border-left:2px solid var(--ox);background:var(--void-2);color:var(--cream)}
+pre code{background:none;border:none;padding:0;color:inherit}
+.btn{display:inline-block;padding:12px 22px;background:var(--ox);color:#fff;letter-spacing:3px;font-size:12px;border:1px solid var(--ox);cursor:pointer;font-family:inherit;border-bottom:none;text-transform:uppercase}
+.btn:hover{background:#a02020}
+.btn.dim{background:var(--void-2);color:var(--cream)}
+.cta{margin:32px 0;display:flex;gap:14px;flex-wrap:wrap}
+.demo{background:var(--void-2);border:1px solid var(--brass-dim);padding:24px;margin:24px 0}
+.demo h3{margin-top:0}
+.demo input,.demo textarea,.demo button,.demo select{background:var(--void);color:var(--cream);border:1px solid var(--void-3);padding:10px 14px;font-family:inherit;font-size:13px;margin:6px 0;width:100%;cursor:pointer}
+.demo textarea{min-height:60px;resize:vertical}
+.demo button.go{background:var(--ox);color:#fff;border-color:var(--ox);letter-spacing:2px}
+.demo button.go:hover{background:#a02020}
+.demo .status{margin-top:14px;font-size:12px;color:var(--cream-dim);min-height:18px;letter-spacing:1px;font-family:inherit}
+.demo .ok{color:var(--green)}
+.demo .err{color:var(--red)}
+.demo pre.out{background:var(--void);color:var(--cream);max-height:300px;overflow-y:auto;font-size:12px;margin-top:10px}
+.providers{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+.pcard{background:var(--void-2);border:1px solid var(--void-3);padding:12px;border-left:2px solid var(--brass-dim);font-size:12px}
+.pcard.up{border-left-color:var(--green)}
+.pcard.down{border-left-color:var(--cream-dim);opacity:.55}
+.pcard .label{color:var(--cream);font-weight:600}
+.pcard .meta{color:var(--cream-dim);font-size:10px;margin-top:4px;letter-spacing:1px;text-transform:uppercase}
+.pcard .badge{display:inline-block;padding:1px 6px;font-size:10px;border:1px solid var(--cream-dim);color:var(--cream-dim);margin-right:4px}
+.pcard .badge.free{color:var(--green);border-color:var(--green)}
+.seal{margin-top:80px;text-align:center;color:var(--cream-dim);font-size:11px;letter-spacing:3px}
+.seal .s{color:var(--ox);font-size:18px}
+@media(max-width:680px){.wrap{padding:40px 20px 80px}header h1{font-size:30px;letter-spacing:3px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+<h1><span class="s">◊</span> fallcompass <span class="k">·κ=1</span></h1>
+<div class="sub">SOVEREIGN LLM CASCADE · FIRST SUCCESS WINS</div>
+<div class="meta">
+  <span>8 PROVIDERS</span>
+  <span>AUTO-FAILOVER</span>
+  <span>BYOK</span>
+  <span>WEBLLM LOCAL</span>
+  <span>OLLAMA LOCAL</span>
+  <span>MIT</span>
+</div>
+</header>
+
+<section>
+<p class="lead">If Anthropic gates · if OpenAI ToS shifts · if your favourite LLM provider rate-limits you on a Sunday night · fallcompass keeps your tool alive.</p>
+<p class="hook">"One drop-in script. Eight LLM providers. The cascade tries them in your preferred order. First success wins. Your sovereign tool never depends on a single vendor's mood."</p>
+<p>fallcompass is the answer to "what happens to my AI app the day OpenAI shuts you down." It's a 6KB shim you paste into any HTML file. It tries Ollama (free, local) → fallcore (your self-hosted proxy) → Anthropic → OpenRouter → Gemini → OpenAI → Mistral → WebLLM (in-browser, no key) — in whatever order you want, with whatever keys you have. The first one that responds, wins.</p>
+</section>
+
+<section>
+<h2>Why this exists</h2>
+<table>
+<thead><tr><th>What kills SaaS-AI apps</th><th>fallcompass response</th></tr></thead>
+<tbody>
+<tr><td class="dim">OpenAI deprecates GPT-4 endpoint</td><td class="good">Cascade falls through to Claude / Gemini / local</td></tr>
+<tr><td class="dim">Anthropic adds country block</td><td class="good">Cascade falls through to OpenRouter / Mistral / local</td></tr>
+<tr><td class="dim">Your API key gets rate-limited</td><td class="good">Cascade falls through to next provider · user sees no error</td></tr>
+<tr><td class="dim">Provider injects new "safety" filter you can't bypass</td><td class="good">Cascade falls through to less-filtered alternative</td></tr>
+<tr><td class="dim">Internet is down</td><td class="good">WebLLM in-browser kicks in · zero network</td></tr>
+<tr><td class="dim">Your client doesn't trust paid APIs</td><td class="good">Default to Ollama (their hardware, their model, their key)</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Live · what's reachable from your browser right now</h2>
+<div class="demo">
+<h3>◊ provider probe</h3>
+<p style="font-size:12px;color:var(--cream-dim)">Click probe to see which LLM providers are reachable from this device. Local ones (Ollama, WebLLM) need no key. Cloud ones (Anthropic, OpenAI, etc.) need your BYOK.</p>
+<button class="go" id="probeBtn">PROBE NOW ◊</button>
+<div id="providers" class="providers" style="margin-top:14px"></div>
+<div class="status" id="probeStatus"></div>
+</div>
+</section>
+
+<section>
+<h2>Live · send a real prompt through the cascade</h2>
+<div class="demo">
+<h3>◊ cascade test</h3>
+<p style="font-size:12px;color:var(--cream-dim)">Type a prompt. Click ASK. fallcompass tries your preferred provider order. First one that responds, wins. You'll see which provider answered + how long it took.</p>
+<textarea id="prompt">Give me one operator-grade line about why sovereign software wins long-term. Under 25 words.</textarea>
+<button class="go" id="askBtn">ASK CASCADE ◊</button>
+<div class="status" id="askStatus"></div>
+<pre class="out" id="askOut" style="display:none"></pre>
+</div>
+</section>
+
+<section>
+<h2>Drop into ANY sovereign tool · 2 lines</h2>
+<pre><code>&lt;script src="https://sjgant80-hub.github.io/fallcompass/fallcompass-shim.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const r = await FallCompass.chat({ messages: [{ role:'user', content:'hi' }] });
+  console.log(r.provider, '·', r.ms, 'ms', '·', r.reply);
+&lt;/script&gt;</code></pre>
+
+<p>That's it. Your tool now has 8-provider failover. <code>FallCompass.setKey('anthropic','sk-ant-...')</code> sets a key for that provider (stored in localStorage). <code>FallCompass.probe()</code> returns which providers are reachable.</p>
+</section>
+
+<section>
+<h2>Preferred cascade order (default)</h2>
+<ol style="margin-left:24px;color:var(--cream)">
+<li><b style="color:var(--green)">ollama</b> — local server, free, no rate limit, your hardware</li>
+<li><b style="color:var(--green)">fallcore</b> — self-hosted Anthropic-compat proxy (also free if running)</li>
+<li><b>anthropic</b> — Claude (requires API key OR Claude Code subscription)</li>
+<li><b>openrouter</b> — has free-tier models like llama-3.2-3b-instruct:free</li>
+<li><b>gemini</b> — Google · generous free tier</li>
+<li><b>openai</b> — GPT-4o-mini · cheap and fast</li>
+<li><b>mistral</b> — European, lighter filtering</li>
+<li><b style="color:var(--green)">webllm</b> — in-browser via @mlc-ai/web-llm CDN · WebGPU · zero network</li>
+</ol>
+<p>Override the order per-request:</p>
+<pre><code>FallCompass.chat({
+  messages: [...],
+  preferredOrder: ['webllm','ollama','anthropic']
+});</code></pre>
+</section>
+
+<section>
+<h2>Threat-defended scenarios</h2>
+<ul>
+<li><b>Anthropic shuts off your account.</b> Cascade falls through to OpenRouter / Gemini / OpenAI / Mistral / WebLLM. Your tool keeps working. You re-key on the new provider in 30 seconds via <code>FallCompass.setKey()</code>.</li>
+<li><b>OpenAI deprecates GPT-4 mid-product.</b> No frontend changes needed. Cascade auto-routes around the dead endpoint.</li>
+<li><b>Country-level block of your favourite API.</b> Cascade auto-detects 4xx, moves to next. Your users in restricted countries get WebLLM or Ollama-local.</li>
+<li><b>Internet down at the airport.</b> WebLLM still answers (slowly, but answers). Your tool isn't dead.</li>
+<li><b>Compliance team forbids cloud LLMs.</b> Set <code>preferredOrder: ['ollama','fallcore']</code> · all inference stays on-premise.</li>
+</ul>
+</section>
+
+<section>
+<h2>FAQ</h2>
+
+<h3>Does fallcompass send my prompts anywhere?</h3>
+<p>Only to the LLM provider you have a key for. Never to a fallcompass server (there is none). Open the Network tab — verify yourself.</p>
+
+<h3>Where are my API keys stored?</h3>
+<p>In your browser's <code>localStorage</code>, under <code>fallcompass.&lt;provider&gt;.key</code>. They never leave the device. Clearing browser data wipes them.</p>
+
+<h3>Can I disable specific providers?</h3>
+<p>Yes — pass <code>preferredOrder</code> to <code>chat()</code> with only the providers you want, in your preferred sequence.</p>
+
+<h3>What about streaming?</h3>
+<p>v1.0 is non-streaming for simplicity. v1.1 (next) will add streaming on a per-adapter basis.</p>
+
+<h3>Is this the same as fallcore?</h3>
+<p>No. <a href="https://github.com/sjgant80-hub/fallcore">fallcore</a> is a self-hosted Anthropic-compatible proxy (one provider, your hardware). fallcompass is a browser-side cascade router (8 providers, automatic failover). They mesh: fallcore is one of fallcompass's adapters.</p>
+
+<h3>Is the shim safe to load from a CDN?</h3>
+<p>It's hosted on GitHub Pages, which serves it from GitHub's infrastructure. If you don't trust that, vendor-copy the file into your own tool — it's 6KB, zero dependencies.</p>
+</section>
+
+<section>
+<h2>Estate ripple · the dual move</h2>
+<p>Every tool in the AI Native Solutions estate that currently uses a single LLM provider will get fallcompass injected. Same line:</p>
+<pre><code>&lt;script src="https://sjgant80-hub.github.io/fallcompass/fallcompass-shim.js"&gt;&lt;/script&gt;</code></pre>
+<p>After ripple: if Anthropic gates the subscription · ShadowCompass, FallPost, FallMap, FallForce, FallLearn, FallAccount Trades, the AI Native Solutions hub — they all silently fail over to Ollama / Gemini / OpenRouter. Users see no outage. The estate self-defends.</p>
+</section>
+
+<section>
+<h2>License · sovereignty notice</h2>
+<p>MIT. Fork it, vendor-copy it, modify it. The 6KB shim is yours.</p>
+<p>Built by <a href="https://www.ai-nativesolutions.com">AI Native Solutions</a>. Part of the sovereign estate. <a href="https://github.com/sjgant80-hub/fallcompass">Source on GitHub</a>.</p>
+</section>
+
+<div class="cta">
+  <a class="btn" href="https://github.com/sjgant80-hub/fallcompass">VIEW ON GITHUB</a>
+  <a class="btn dim" href="https://www.ai-nativesolutions.com">THE FULL ESTATE</a>
+</div>
+
+<div class="seal"><span class="s">◊·κ=1</span> &nbsp; prime 379 &nbsp; v20.1 · φ=1.618 · κ=0.618 &nbsp; the cascade compounds</div>
+
+</div>
+
+<script src="./fallcompass-shim.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+
+async function renderProbe(){
+  $('#probeStatus').textContent = 'probing…';
+  const r = await window.FallCompass.probe();
+  const meta = window.FallCompass.listProviders();
+  $('#providers').innerHTML = Object.entries(r).map(([k,up]) => {
+    const m = meta[k] || {};
+    return `<div class="pcard ${up?'up':'down'}">
+      <div class="label">${m.label || k}</div>
+      <div class="meta">
+        <span class="badge ${m.free?'free':''}">${m.free?'FREE':'BYOK'}</span>
+        <span style="color:${up?'var(--green)':'var(--cream-dim)'}">${up?'reachable':'unreachable'}</span>
+      </div>
+    </div>`;
+  }).join('');
+  const reach = Object.values(r).filter(Boolean).length;
+  $('#probeStatus').innerHTML = `<span class="ok">${reach} of ${Object.keys(r).length} reachable</span> · click <b>ask cascade</b> to send a real prompt`;
+}
+$('#probeBtn').onclick = renderProbe;
+
+$('#askBtn').onclick = async () => {
+  const prompt = $('#prompt').value.trim();
+  if (!prompt) return;
+  $('#askStatus').textContent = 'firing cascade…';
+  $('#askOut').style.display = 'none';
+  try {
+    const r = await window.FallCompass.chat({ messages: [{ role: 'user', content: prompt }] });
+    $('#askStatus').innerHTML = `<span class="ok">✓ ${r.label} answered in ${r.ms}ms</span>`;
+    $('#askOut').style.display = 'block';
+    $('#askOut').textContent = r.reply;
+  } catch (e) {
+    $('#askStatus').innerHTML = `<span class="err">all providers failed · ${e.message.slice(0,140)}</span><br><span style="color:var(--cream-dim)">set a key with: FallCompass.setKey('anthropic','sk-ant-...')</span>`;
+  }
+};
+</script>
+</body>
+</html>
