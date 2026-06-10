@@ -31,7 +31,7 @@
 (function(){
   if (window.FallCompass) return;   // idempotent
 
-  const VERSION = '1.0.0';
+  const VERSION = '2.0.0';  // ◊ nas-aware cascade · cube-enriched routing · prime 1303
   const CHAN = 'fall-signal';
   let signal = null;
   try { signal = new BroadcastChannel(CHAN); } catch {}
@@ -200,8 +200,49 @@
 
   const DEFAULT_ORDER = ['ollama', 'fallcore', 'anthropic', 'openrouter', 'gemini', 'openai', 'mistral', 'webllm'];
 
+  // ───────── ◊·κ=φ⁴ · NAS cube enrichment (L4 ← L5) ─────────
+  // If nas-shim is present + fork loaded, recall from cube before routing
+  // and ingest the result after. Falls through silently when unavailable.
+  async function _nasRecall(opts) {
+    if (!window.nas || !window.nas.isForkPresent || !window.nas.isForkPresent()) return null;
+    try {
+      const lastUserMsg = (opts.messages || []).filter(m => m.role === 'user').slice(-1)[0];
+      if (!lastUserMsg || !lastUserMsg.content) return null;
+      const hits = await window.nas.recall(String(lastUserMsg.content).slice(0, 400), 3);
+      if (!hits || !hits.length) return null;
+      return hits.map(h => `(prior · score ${(h.score||0).toFixed(2)}): ${h.text}`).join('\n');
+    } catch { return null; }
+  }
+  async function _nasIngest(opts, reply, provider) {
+    if (!window.nas || !window.nas.isForkPresent || !window.nas.isForkPresent()) return;
+    try {
+      const lastUserMsg = (opts.messages || []).filter(m => m.role === 'user').slice(-1)[0];
+      const text = (lastUserMsg?.content || '') + ' → ' + (reply || '').slice(0, 1500);
+      await window.nas.ingest(text, { kind: 'cascade-reply', provider, tool: 'fallcompass' });
+      window.nas.broadcast('bloom_pulse', { provider, intensity: 0.6, color: '#b8974a' });
+    } catch {}
+  }
+
   async function chat(opts = {}) {
-    const order = opts.preferredOrder || DEFAULT_ORDER;
+    // L4 reads L5 before routing · cube-aware cascade
+    const nasContext = await _nasRecall(opts);
+    if (nasContext && Array.isArray(opts.messages)) {
+      opts = {
+        ...opts,
+        messages: [
+          { role: 'system', content: 'Prior context from the user\'s sovereign cube:\n' + nasContext },
+          ...opts.messages,
+        ],
+      };
+    }
+
+    // Fork-aware reordering: if user is `prefer-to-write` skip explainer-heavy providers first
+    let order = opts.preferredOrder || DEFAULT_ORDER;
+    if (window.nas?.isForkPresent?.()) {
+      const depth = window.nas.fork?.verdict?.technical_depth || '';
+      if (depth.includes('write')) order = ['ollama','fallcore', ...order.filter(p => p !== 'ollama' && p !== 'fallcore')];
+    }
+
     const errors = [];
     for (const name of order) {
       const a = adapters[name];
@@ -212,7 +253,8 @@
         const reply = await a.chat({ messages: opts.messages, model: opts.model });
         const ms = (performance.now() - t0) | 0;
         signal?.postMessage({ kind: 'fallcompass:success', provider: name, ms, ts: Date.now() });
-        return { provider: name, label: a.label, reply, ms };
+        _nasIngest(opts, reply, name);  // fire and forget
+        return { provider: name, label: a.label, reply, ms, nasEnriched: !!nasContext };
       } catch (e) {
         errors.push(name + ':' + e.message.slice(0, 60));
         signal?.postMessage({ kind: 'fallcompass:fail', provider: name, error: e.message.slice(0,80), ts: Date.now() });
