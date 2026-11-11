@@ -2,7 +2,7 @@
 
 **Drop-in router for 8 LLM providers. First success wins. If Anthropic gates · the cascade keeps your tool alive.**
 
-[**Live landing**](https://sjgant80-hub.github.io/fallcompass/) · [Shim source](./fallcompass-shim.js) · MIT · Part of [AI Native Solutions](https://www.ai-nativesolutions.com) · ◊·κ=1
+[**Live landing**](https://sjgant80-hub.github.io/fallcompass/) · [Shim source](./fallcompass-shim.js) · MIT · Part of [AI Native Solutions](https://www.ai-nativesolutions.com)
 
 ---
 
@@ -110,4 +110,4 @@ MIT. Fork it, vendor-copy it, modify it.
 
 Built by [AI Native Solutions](https://www.ai-nativesolutions.com). Part of the sovereign estate of 60+ tools. Same philosophy: single-file, you own them outright, no SaaS rent.
 
-◊·κ=1 · prime 379 · v20.1 · φ=1.618 · κ=0.618 · the cascade compounds
+v20.1 · the cascade compounds

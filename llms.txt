@@ -1,6 +1,6 @@
 # fallcompass
 
-> Sovereign LLM cascade · 8 providers · auto-failover · drop-in shim · MIT · ◊·κ=1 · sovereign single-file tool · MIT-licensed · Ed25519-signed · listed on FallMarket.
+> Sovereign LLM cascade · 8 providers · auto-failover · drop-in shim · MIT · sovereign single-file tool · MIT-licensed · Ed25519-signed · listed on FallMarket.
 
 fallcompass is a sovereign tool built by the AI-Native Solutions guild. It runs on your machine, ships with source, and never phones home.
 
